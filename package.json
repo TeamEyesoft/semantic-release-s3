@@ -7,7 +7,7 @@
         "semantic-release",
         "s3"
     ],
-    "repository": "git@github.com:RimacTechnology/semantic-release-s3.git",
+    "repository": "git@github.com:TeamEyesoft/semantic-release-s3.git",
     "license": "MIT",
     "author": "Rimac Technology d.o.o.",
     "main": "lib/index.js",
