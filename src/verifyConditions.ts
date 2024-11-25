@@ -10,11 +10,11 @@ export function verifyConditions(config: PluginConfig, context: Context): void {
 
     const awsConfig = AWS.loadConfig(config, context)
 
-    if (!awsConfig.awsAccessKey) {
+    if (!awsConfig.accessKey) {
         errors.push(getError('ENOACCESSKEYID'))
     }
 
-    if (!awsConfig.awsSecretAccessKey) {
+    if (!awsConfig.secretAccessKey) {
         errors.push(getError('ENOSECRETACCESSKEY'))
     }
 
@@ -23,6 +23,10 @@ export function verifyConditions(config: PluginConfig, context: Context): void {
     }
 
     if (!config.directoryPath) {
+        errors.push(getError('ENODIRECTORYPATH'))
+    }
+
+    if (config.s3BucketEndpoint && !config.endpoint) {
         errors.push(getError('ENODIRECTORYPATH'))
     }
 

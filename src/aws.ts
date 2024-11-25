@@ -2,10 +2,7 @@ import type { ReadStream } from 'fs'
 
 import type aws from 'aws-sdk'
 import type { AWSError } from 'aws-sdk'
-import {
-    Credentials,
-    S3,
-} from 'aws-sdk'
+import { S3 } from 'aws-sdk'
 import type {
     ListObjectsV2Request,
     ManagedUpload,
@@ -15,30 +12,39 @@ import type {
 import type { Context } from 'semantic-release'
 
 import type {
-    AWSConfig,
     PluginConfig,
+    S3Config,
+    WithoutNullableKeys,
 } from './types'
 
 export class AWS {
-    public static loadConfig(config: PluginConfig, context: Context): AWSConfig {
+    public static loadConfig(config: PluginConfig, context: Context): S3Config {
         return {
-            awsAccessKey: context.env[config.awsAccessKeyName ?? 'AWS_ACCESS_KEY_ID'] ?? null,
-            awsSecretAccessKey: context.env[config.awsSecretAccessKeyName ?? 'AWS_SECRET_ACCESS_KEY'] ?? null,
+            accessKey: context.env[config.accessKeyName ?? 'S3_ACCESS_KEY_ID'] ?? null,
+            endpoint: config.endpoint ?? undefined,
+            region: config.region ?? undefined,
+            s3BucketEndpoint: config.s3BucketEndpoint ?? undefined,
+            secretAccessKey: context.env[config.secretAccessKeyName ?? 'S3_SECRET_ACCESS_KEY'] ?? null,
+            sslEnabled: config.sslEnabled ?? undefined,
         }
     }
 
     public readonly awsS3: InstanceType<typeof aws.S3>
 
-    constructor(accessKey: string, secretAccessKey: string) {
+    constructor(s3Config: WithoutNullableKeys<S3Config>) {
         this.awsS3 = new S3({
+            accessKeyId: s3Config.accessKey,
             computeChecksums: true,
-            credentials: new Credentials(accessKey, secretAccessKey),
-            sslEnabled: true,
+            endpoint: s3Config.endpoint,
+            region: s3Config.region,
+            s3BucketEndpoint: s3Config.s3BucketEndpoint,
+            secretAccessKey: s3Config.secretAccessKey,
+            sslEnabled: s3Config.sslEnabled,
         })
     }
 
     public async deleteFile(bucket: string, pathToDelete: string) {
-        return new Promise((_resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
             const deleteParam = {
                 Bucket: bucket,
                 Key: pathToDelete,
@@ -47,6 +53,8 @@ export class AWS {
             this.awsS3.deleteObject(deleteParam, (error: AWSError | null) => {
                 if (error) {
                     reject(error)
+                } else {
+                    resolve(`File ${pathToDelete} deleted successfully from bucket ${bucket}`)
                 }
             })
         })
@@ -104,7 +112,7 @@ export class AWS {
             Key: key,
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
             this.awsS3.upload(uploadParams, (error: Error | null, data: ManagedUpload.SendData) => {
                 if (error) {
                     reject(error)

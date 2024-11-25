@@ -1,5 +1,5 @@
 {
-    "name": "@rimac-technology/semantic-release-s3",
+    "name": "@eyesoft/semantic-release-s3",
     "version": "2.4.0",
     "description": "Semantic-release plugin to push files and folders to AWS S3 bucket",
     "keywords": [
@@ -46,7 +46,7 @@
     },
     "dependencies": {
         "aggregate-error": "^3.1.0",
-        "aws-sdk": "^2.1325.0",
+        "aws-sdk": "^2.1692.0",
         "globby": "^11.1.0",
         "lodash.template": "^4.5.0",
         "mime-types": "^2.1.35"

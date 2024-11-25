@@ -8,15 +8,15 @@ import type { Context } from 'semantic-release'
 
 import { AWS } from './aws'
 import type {
-    AWSConfig,
     PluginConfig,
+    S3Config,
     WithoutNullableKeys,
 } from './types'
 
 export async function publish(config: PluginConfig, context: Context) {
-    const awsConfig = AWS.loadConfig(config, context) as WithoutNullableKeys<AWSConfig>
+    const awsConfig = AWS.loadConfig(config, context) as WithoutNullableKeys<S3Config>
 
-    const s3 = new AWS(awsConfig.awsAccessKey, awsConfig.awsSecretAccessKey)
+    const s3 = new AWS(awsConfig)
 
     const filePaths = await globby(config.directoryPath)
 
@@ -59,7 +59,7 @@ export async function publish(config: PluginConfig, context: Context) {
         })
     }
 
-    const publishPromises = []
+    const publishPromises: Array<Promise<string>> = []
 
     if (config.removeDiff) {
         const existingFiles = await s3.getExistingFiles(bucketName, bucketPrefix)

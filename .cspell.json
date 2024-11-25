@@ -6,6 +6,7 @@
     },
     "ignorePaths": ["CHANGELOG.md"],
     "ignoreWords": [
+        "eyesoft",
         "rimac",
         "packagerc",
         "loglevel",

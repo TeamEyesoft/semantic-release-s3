@@ -52,6 +52,14 @@ export function getError(code: ErrorCodes): SemanticReleaseError {
         )
     }
 
+    case 'ENOENDPOINT': {
+        return new SemanticReleaseError(
+            'No endpoint specified.',
+            'ENOENDPOINT',
+            'Endpoint should be specified if s3BucketEndpoint is set.'
+        )
+    }
+
     default: {
         return new SemanticReleaseError(
             'Unknown error occurred.'
