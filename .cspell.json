@@ -19,6 +19,7 @@
         "ENOSECRETACCESSKEY",
         "ENOBUCKETCONFIGURATION",
         "ENODIRECTORYPATH",
-        "ENOENDPOINT"
+        "ENOENDPOINT",
+        "ES3CMDFAILED"
     ]
 }

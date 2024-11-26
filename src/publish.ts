@@ -1,12 +1,14 @@
 import fs from 'fs'
 import * as path from 'path'
 
+import AggregateError from 'aggregate-error'
 import globby from 'globby'
 import template from 'lodash.template'
 import mime from 'mime-types'
 import type { Context } from 'semantic-release'
 
 import { AWS } from './aws'
+import { getS3Error } from './error'
 import type {
     PluginConfig,
     S3ConfigProps,
@@ -65,7 +67,6 @@ export async function publish(config: PluginConfig, context: Context) {
 
     if (config.removeDiff) {
         const existingFiles = await s3.getExistingFiles(bucketName, bucketPrefix)
-
         const fileDifference = existingFiles.filter((file) => {
             if (config.removeDirectoryRoot) {
                 return !removedRootFilesPaths.includes(file)
@@ -79,7 +80,7 @@ export async function publish(config: PluginConfig, context: Context) {
 
             return s3.deleteFile(
                 bucketName,
-                pathToDelete,
+                `${bucketPrefix}/${pathToDelete}`,
             )
         }))
     }
@@ -100,7 +101,13 @@ export async function publish(config: PluginConfig, context: Context) {
         )
     }))
 
-    await Promise.allSettled(publishPromises)
+    const results = await Promise.allSettled(publishPromises)
+
+    const errors = results.filter((result) => result.status === 'rejected').map((result) => getS3Error(result.reason))
+
+    if (errors.length > 0) {
+        throw new AggregateError(errors)
+    }
 
     // Url to the bucket
     let url = `https://${awsConfig.endpoint}/${bucketName}/${bucketPrefix}`

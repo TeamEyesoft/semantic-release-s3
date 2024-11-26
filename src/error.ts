@@ -16,6 +16,14 @@ export class SemanticReleaseError extends Error {
     }
 }
 
+export function getS3Error(message: string): SemanticReleaseError {
+    return new SemanticReleaseError(
+        'S3 command failed',
+        'ES3CMDFAILED',
+        message
+    )
+}
+
 export function getError(code: ErrorCodesProps): SemanticReleaseError {
     switch (code) {
         case 'ENOACCESSKEYID': {

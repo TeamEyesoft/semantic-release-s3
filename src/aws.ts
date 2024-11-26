@@ -56,7 +56,6 @@ export class AWS {
     }
 
     public async emptyBucket(bucket: string, prefix?: string) {
-        // Empty bucket
         const listObjectsCommand = new ListObjectsCommand({ Bucket: bucket, Prefix: prefix })
         const { Contents } = await this.awsS3.send(listObjectsCommand)
 
@@ -85,7 +84,7 @@ export class AWS {
             return s3.send(listObjectsCommand).then(async (data) => {
                 if (data.Contents) {
                     allKeys.push(...data.Contents.map((content) => {
-                        return content.Key as string
+                        return (content.Key as string).replace(`${prefix}/`, '')
                     }))
                 }
 

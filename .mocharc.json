@@ -3,5 +3,5 @@
     "spec": "tests/**/*.ts",
     "require": ["ts-node/register"],
     "recursive": true,
-    "timeout": 5000
+    "timeout": 15000
 }
