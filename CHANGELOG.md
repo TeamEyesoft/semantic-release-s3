@@ -1,3 +1,12 @@
+## [1.0.1](https://github.com/TeamEyesoft/semantic-release-s3/compare/v1.0.0...v1.0.1) (2024-11-26)
+
+
+### Bug Fixes
+
+* check s3Bucket existance before using keys ([5f03ef6](https://github.com/TeamEyesoft/semantic-release-s3/commit/5f03ef62a4da9adae04469342163798859f8ef7c))
+* update dependencies and move to aws sdk v3 ([4962330](https://github.com/TeamEyesoft/semantic-release-s3/commit/496233099ecf2be9b75747368795530c199dc777))
+* update publish url ([4247c4e](https://github.com/TeamEyesoft/semantic-release-s3/commit/4247c4e5e7a68594e53d59e859b783368ee2ee36))
+
 ## 1.0.0 (2024-11-25)
 
 
