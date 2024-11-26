@@ -1,4 +1,4 @@
-import type { ObjectCannedACL } from 'aws-sdk/clients/s3'
+import type { ObjectCannedACL } from '@aws-sdk/client-s3'
 import type { Config } from 'semantic-release'
 
 export interface PluginConfig extends Config {
@@ -70,11 +70,11 @@ export interface PluginConfig extends Config {
     readonly sslEnabled?: boolean
 }
 
-export type WithoutNullableKeys<Type> = {
-    [Key in keyof Type]-?: WithoutNullableKeys<NonNullable<Type[Key]>>
+export type WithoutNullableKeysType<T> = {
+    [Key in keyof T]-?: WithoutNullableKeysType<NonNullable<T[Key]>>
 }
 
-export type S3Config = {
+export type S3ConfigProps = {
     /**
      * Access key
      *
@@ -113,5 +113,5 @@ export type S3Config = {
     sslEnabled: boolean | undefined
 }
 
-export type ErrorCodes =
+export type ErrorCodesProps =
     'ENOACCESSKEYID' | 'ENODIRECTORYPATH' | 'ENOENDPOINT' | 'ENOS3BUCKET' | 'ENOSECRETACCESSKEY'

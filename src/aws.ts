@@ -1,24 +1,26 @@
-import type { ReadStream } from 'fs'
+import type { Readable } from 'node:stream'
 
-import type aws from 'aws-sdk'
-import type { AWSError } from 'aws-sdk'
-import { S3 } from 'aws-sdk'
 import type {
-    ListObjectsV2Request,
-    ManagedUpload,
+    ListObjectsRequest,
     ObjectCannedACL,
-    PutObjectRequest,
-} from 'aws-sdk/clients/s3'
+    PutObjectCommandInput,
+} from '@aws-sdk/client-s3'
+import {
+    DeleteObjectsCommand,
+    ListObjectsCommand,
+    PutObjectCommand,
+    S3,
+} from '@aws-sdk/client-s3'
 import type { Context } from 'semantic-release'
 
 import type {
     PluginConfig,
-    S3Config,
-    WithoutNullableKeys,
+    S3ConfigProps,
+    WithoutNullableKeysType,
 } from './types'
 
 export class AWS {
-    public static loadConfig(config: PluginConfig, context: Context): S3Config {
+    public static loadConfig(config: PluginConfig, context: Context): S3ConfigProps {
         return {
             accessKey: context.env[config.accessKeyName ?? 'S3_ACCESS_KEY_ID'] ?? null,
             endpoint: config.endpoint ?? undefined,
@@ -29,68 +31,57 @@ export class AWS {
         }
     }
 
-    public readonly awsS3: InstanceType<typeof aws.S3>
+    public readonly awsS3: InstanceType<typeof S3>
 
-    constructor(s3Config: WithoutNullableKeys<S3Config>) {
+    constructor(s3Config: WithoutNullableKeysType<S3ConfigProps>) {
         this.awsS3 = new S3({
-            accessKeyId: s3Config.accessKey,
-            computeChecksums: true,
+            bucketEndpoint: s3Config.s3BucketEndpoint,
+            credentials: {
+                accessKeyId: s3Config.accessKey,
+                secretAccessKey: s3Config.secretAccessKey,
+            },
             endpoint: s3Config.endpoint,
             region: s3Config.region,
-            s3BucketEndpoint: s3Config.s3BucketEndpoint,
-            secretAccessKey: s3Config.secretAccessKey,
-            sslEnabled: s3Config.sslEnabled,
+            tls: s3Config.sslEnabled,
         })
     }
 
     public async deleteFile(bucket: string, pathToDelete: string) {
-        return new Promise<string>((resolve, reject) => {
-            const deleteParam = {
-                Bucket: bucket,
-                Key: pathToDelete,
-            }
-
-            this.awsS3.deleteObject(deleteParam, (error: AWSError | null) => {
-                if (error) {
-                    reject(error)
-                } else {
-                    resolve(`File ${pathToDelete} deleted successfully from bucket ${bucket}`)
-                }
-            })
+        const deleteObjectsCommand = new DeleteObjectsCommand({
+            Bucket: bucket,
+            Delete: { Objects: [{ Key: pathToDelete }] },
         })
+
+        return this.awsS3.send(deleteObjectsCommand)
     }
 
     public async getExistingFiles(bucket: string, prefix?: string) {
         async function existingFilesKeys(
             s3: S3,
-            param: ListObjectsV2Request,
+            param: ListObjectsRequest,
             allKeys: string[] = [],
         ): Promise<string[]> {
-            return new Promise((resolve, reject) => {
-                s3.listObjectsV2(param, async (error: AWSError | null, data) => {
-                    if (error) {
-                        reject(error)
-                    } else {
-                        if (data.Contents) {
-                            allKeys.push(...data.Contents.map((content) => {
-                                return content.Key as string
-                            }))
-                        }
+            const listObjectsCommand = new ListObjectsCommand(param)
 
-                        if (data.IsTruncated) {
-                            resolve(await existingFilesKeys(
-                                s3,
-                                {
-                                    ...param,
-                                    ContinuationToken: data.NextContinuationToken,
-                                },
-                                allKeys,
-                            ))
-                        } else {
-                            resolve(allKeys)
-                        }
-                    }
-                })
+            return s3.send(listObjectsCommand).then(async (data) => {
+                if (data.Contents) {
+                    allKeys.push(...data.Contents.map((content) => {
+                        return content.Key as string
+                    }))
+                }
+
+                if (data.IsTruncated) {
+                    return existingFilesKeys(
+                        s3,
+                        {
+                            ...param,
+                            Marker: data.NextMarker,
+                        },
+                        allKeys,
+                    )
+                } else {
+                    return allKeys
+                }
             })
         }
 
@@ -103,23 +94,16 @@ export class AWS {
         )
     }
 
-    public async uploadFile(bucket: string, key: string, body: ReadStream, objectMimeType: string, objectACL?: ObjectCannedACL) {
-        const uploadParams: PutObjectRequest = {
+    public async uploadFile(bucket: string, key: string, body: Readable, objectMimeType: string, objectACL?: ObjectCannedACL) {
+        const uploadParams: PutObjectCommandInput = {
             ACL: objectACL,
             Body: body,
             Bucket: bucket,
             ContentType: objectMimeType,
             Key: key,
         }
+        const command = new PutObjectCommand(uploadParams)
 
-        return new Promise<string>((resolve, reject) => {
-            this.awsS3.upload(uploadParams, (error: Error | null, data: ManagedUpload.SendData) => {
-                if (error) {
-                    reject(error)
-                } else {
-                    resolve(data.Location)
-                }
-            })
-        })
+        return this.awsS3.send(command)
     }
 }

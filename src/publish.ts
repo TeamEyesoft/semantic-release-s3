@@ -9,14 +9,14 @@ import type { Context } from 'semantic-release'
 import { AWS } from './aws'
 import type {
     PluginConfig,
-    S3Config,
-    WithoutNullableKeys,
+    S3ConfigProps,
+    WithoutNullableKeysType,
 } from './types'
 
 export async function publish(config: PluginConfig, context: Context) {
-    const { logger } = context;
+    const { branch, lastRelease, logger, nextRelease } = context
 
-    const awsConfig = AWS.loadConfig(config, context) as WithoutNullableKeys<S3Config>
+    const awsConfig = AWS.loadConfig(config, context) as WithoutNullableKeysType<S3ConfigProps>
 
     const s3 = new AWS(awsConfig)
 
@@ -27,14 +27,14 @@ export async function publish(config: PluginConfig, context: Context) {
     if (typeof config.s3Bucket === 'string') {
         s3Bucket = config.s3Bucket
     } else if (typeof config.s3Bucket === 'object') {
-        s3Bucket = config.s3Bucket[context.branch.name]
+        s3Bucket = config.s3Bucket[branch.name]
     }
 
     const s3BucketWithResolvedVariables = template(s3Bucket)(
         {
-            branch: context.branch.name,
-            lastRelease: context.lastRelease,
-            nextRelease: context.nextRelease,
+            branch: branch.name,
+            lastRelease,
+            nextRelease,
         }
     )
 
@@ -43,7 +43,7 @@ export async function publish(config: PluginConfig, context: Context) {
         ...bucketPrefixes
     ] = s3BucketWithResolvedVariables.split(path.sep)
 
-    const bucketPrefix = bucketPrefixes.join(path.sep).replace(/\$([_a-z]+\w*)|\$\{(\w*)\}/giu, (match, p1, p2) => {
+    const bucketPrefix = bucketPrefixes.join(path.sep).replaceAll(/\$([_a-z]+\w*)|\$\{(\w*)\}/giu, (match, p1, p2) => {
         return process.env[p1 || p2] ?? match
     })
 
@@ -61,7 +61,7 @@ export async function publish(config: PluginConfig, context: Context) {
         })
     }
 
-    const publishPromises: Array<Promise<string>> = []
+    const publishPromises: Array<Promise<unknown>> = []
 
     if (config.removeDiff) {
         const existingFiles = await s3.getExistingFiles(bucketName, bucketPrefix)
@@ -76,6 +76,7 @@ export async function publish(config: PluginConfig, context: Context) {
 
         publishPromises.push(...fileDifference.map(async (pathToDelete) => {
             logger.info(`Deleting file ${pathToDelete} from S3 bucket ${bucketName}`)
+
             return s3.deleteFile(
                 bucketName,
                 pathToDelete,
@@ -97,13 +98,13 @@ export async function publish(config: PluginConfig, context: Context) {
             mimeType,
             config.objectACL
         )
-    }),
-    )
+    }))
 
     await Promise.allSettled(publishPromises)
 
     // Url to the bucket
     let url = `https://${awsConfig.endpoint}/${bucketName}/${bucketPrefix}`
+
     if (config.s3BucketEndpoint) {
         url = `https://${awsConfig.endpoint}/${bucketPrefix}`
     }
