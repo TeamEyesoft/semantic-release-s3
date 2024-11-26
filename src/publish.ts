@@ -14,6 +14,8 @@ import type {
 } from './types'
 
 export async function publish(config: PluginConfig, context: Context) {
+    const { logger } = context;
+
     const awsConfig = AWS.loadConfig(config, context) as WithoutNullableKeys<S3Config>
 
     const s3 = new AWS(awsConfig)
@@ -73,6 +75,7 @@ export async function publish(config: PluginConfig, context: Context) {
         })
 
         publishPromises.push(...fileDifference.map(async (pathToDelete) => {
+            logger.info(`Deleting file ${pathToDelete} from S3 bucket ${bucketName}`)
             return s3.deleteFile(
                 bucketName,
                 pathToDelete,
@@ -84,10 +87,12 @@ export async function publish(config: PluginConfig, context: Context) {
         const fileName = path.basename(filePath)
         // 'application/octet-stream' is the default s3 content type for object uploads
         const mimeType = mime.lookup(fileName) || 'application/octet-stream'
+        const pathToPublish = path.join(bucketPrefix, removedRootFilesPaths[index] ?? filePath)
+        logger.info(`Publishing file ${pathToPublish} from S3 bucket ${bucketName}`)
 
         return s3.uploadFile(
             bucketName,
-            path.join(bucketPrefix, removedRootFilesPaths[index] ?? filePath),
+            pathToPublish,
             fs.createReadStream(filePath),
             mimeType,
             config.objectACL
@@ -97,8 +102,14 @@ export async function publish(config: PluginConfig, context: Context) {
 
     await Promise.allSettled(publishPromises)
 
+    // Url to the bucket
+    let url = `https://${awsConfig.endpoint}/${bucketName}/${bucketPrefix}`
+    if (config.s3BucketEndpoint) {
+        url = `https://${awsConfig.endpoint}/${bucketPrefix}`
+    }
+
     return {
         name: 'S3 release',
-        url: `https://${bucketName}.s3.amazonaws.com/${bucketPrefix}`,
+        url,
     }
 }
