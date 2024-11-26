@@ -55,6 +55,25 @@ export class AWS {
         return this.awsS3.send(deleteObjectsCommand)
     }
 
+    public async emptyBucket(bucket: string, prefix?: string) {
+        // Empty bucket
+        const listObjectsCommand = new ListObjectsCommand({ Bucket: bucket, Prefix: prefix })
+        const { Contents } = await this.awsS3.send(listObjectsCommand)
+
+        if (!Contents) {
+            return
+        }
+
+        const keys = Contents.map((c) => c.Key)
+
+        const deleteObjectsCommand = new DeleteObjectsCommand({
+            Bucket: bucket,
+            Delete: { Objects: keys.map((key) => ({ Key: key })) },
+        })
+
+        return this.awsS3.send(deleteObjectsCommand)
+    }
+
     public async getExistingFiles(bucket: string, prefix?: string) {
         async function existingFilesKeys(
             s3: S3,

@@ -1,6 +1,6 @@
 import type { ErrorCodesProps } from './types'
 
-class SemanticReleaseError extends Error {
+export class SemanticReleaseError extends Error {
     // @ts-expect-error
     private code?: string
 
@@ -20,27 +20,27 @@ export function getError(code: ErrorCodesProps): SemanticReleaseError {
     switch (code) {
         case 'ENOACCESSKEYID': {
             return new SemanticReleaseError(
-                'No aws access key id specified.',
+                'No access key id specified.',
                 'ENOACCESSKEYID',
-                'An aws access key id must be created and set ' +
+                'An access key id must be created and set ' +
                 'in the `S3_ACCESS_KEY` environment variable on your CI environment.'
             )
         }
 
         case 'ENOSECRETACCESSKEY': {
             return new SemanticReleaseError(
-                'No aws secret access key specified.',
+                'No secret access key specified.',
                 'ENOSECRETACCESSKEY',
-                'An aws secret access key id must be created and set ' +
+                'An secret access key id must be created and set ' +
                 'in the `S3_SECRET_ACCESS_KEY` environment variable on your CI environment.'
             )
         }
 
         case 'ENOS3BUCKET': {
             return new SemanticReleaseError(
-                'No aws bucket specified.',
+                'No bucket specified.',
                 'ENOS3BUCKET',
-                'An aws bucket configuration must be specified or configured for at least one branch to ' +
+                'An bucket configuration must be specified or configured for at least one branch to ' +
                 'successfully upload files.'
             )
         }
@@ -49,7 +49,7 @@ export function getError(code: ErrorCodesProps): SemanticReleaseError {
             return new SemanticReleaseError(
                 'No directory path for upload specified.',
                 'ENODIRECTORYPATH',
-                'Directory path must be specified to successfully upload files to aws bucket.'
+                'Directory path must be specified to successfully upload files to bucket.'
             )
         }
 
