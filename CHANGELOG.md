@@ -1,3 +1,16 @@
+## [1.0.2](https://github.com/TeamEyesoft/semantic-release-s3/compare/v1.0.1...v1.0.2) (2024-11-26)
+
+
+### Bug Fixes
+
+* handle errors and fix diff code ([1cd3370](https://github.com/TeamEyesoft/semantic-release-s3/commit/1cd3370ef7ab38af6d3058ca156c266fb9cc7d65))
+
+
+### Other
+
+* add tests ([2ccaf0e](https://github.com/TeamEyesoft/semantic-release-s3/commit/2ccaf0e078a970c02172dc684a93f1870257ca24))
+* revert README ([718bd65](https://github.com/TeamEyesoft/semantic-release-s3/commit/718bd65b89379bcf0029ed864177e9aaf528af27))
+
 ## [1.0.1](https://github.com/TeamEyesoft/semantic-release-s3/compare/v1.0.0...v1.0.1) (2024-11-26)
 
 
