@@ -1,3 +1,10 @@
+## [1.1.0](https://github.com/TeamEyesoft/semantic-release-s3/compare/v1.0.2...v1.1.0) (2024-12-24)
+
+
+### Features
+
+* add metadata and MD5 hash support to S3 upload ([7428486](https://github.com/TeamEyesoft/semantic-release-s3/commit/7428486340e472ee4b1565c3029ce09c08801e4b))
+
 ## [1.0.2](https://github.com/TeamEyesoft/semantic-release-s3/compare/v1.0.1...v1.0.2) (2024-11-26)
 
 
