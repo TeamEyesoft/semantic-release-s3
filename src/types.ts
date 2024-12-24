@@ -21,6 +21,18 @@ export interface PluginConfig extends Config {
      */
     readonly endpoint?: string
     /**
+     * A map of base64-encoded MD5 hash of uploaded objects
+     *
+     * @default undefined
+     */
+    readonly md5Hashes?: Record<string, string>
+    /**
+     * A map of metadata to store with the object in S3
+     *
+     * @default undefined
+     */
+    readonly metadata?: Record<string, string>
+    /**
      * Object ACL
      *
      * @default ""

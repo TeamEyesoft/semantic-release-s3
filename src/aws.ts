@@ -112,13 +112,23 @@ export class AWS {
         )
     }
 
-    public async uploadFile(bucket: string, key: string, body: Readable, objectMimeType: string, objectACL?: ObjectCannedACL) {
+    public async uploadFile(
+        bucket: string,
+        key: string,
+        body: Readable,
+        objectMimeType: string,
+        objectACL?: ObjectCannedACL,
+        metadata?: Record<string, string>,
+        md5Hash?: string
+    ) {
         const uploadParams: PutObjectCommandInput = {
             ACL: objectACL,
             Body: body,
             Bucket: bucket,
+            ContentMD5: md5Hash,
             ContentType: objectMimeType,
             Key: key,
+            Metadata: metadata,
         }
         const command = new PutObjectCommand(uploadParams)
 

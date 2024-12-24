@@ -97,7 +97,9 @@ export async function publish(config: PluginConfig, context: Context) {
             pathToPublish,
             fs.createReadStream(filePath),
             mimeType,
-            config.objectACL
+            config.objectACL,
+            config.metadata,
+            config.md5Hashes?.[filePath],
         )
     }))
 

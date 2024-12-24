@@ -72,6 +72,8 @@ options with `accessKeyName` and `secretAccessKeyName`.
 | `region`                 | S3 Region                                                                                               |         |          |
 | `s3BucketEndpoint`       | Whether the provided endpoint addresses an individual bucket                                            |         |          |
 | `sslEnabled`             | Whether to enable SSL for requests                                                                      |         |          |
+| `metadata`               | A map of metadata to upload with the object                                                             |         |          |
+| `md5Hashes`              | A map of md5 hashes using file paths as key                                                             |         |          |
 
 #### `s3Bucket option`
 
